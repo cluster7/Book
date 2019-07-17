@@ -30,6 +30,7 @@ showAlert(message, className){
         div.appendChild(document.createTextNode(message));
     //Get parent
         const container = document.querySelector('.container');
+    //Get form
         const form = document.querySelector('#book-form');
     //Insert alert
         container.insertBefore(div, form);
@@ -54,6 +55,55 @@ clearFields(){
 
 }
 
+//local storage class
+class Store {
+    static getBooks(){
+    let books;
+    if(localStorage.getItem('books') === null){
+        books = [];
+    }else {
+       books = JSON.parse(localStorage.getItem('books'));
+    }
+        return books;
+    }
+
+    static displayBooks(){
+        const books = Store.getBooks();
+
+        books.forEach(function(book){
+          const ui = new UI;
+     //Add book to UI
+     ui.addBookToList(book);       
+        });
+        
+    }
+    
+    static addBook(book){
+        const books = Store.getBooks();
+
+        books.push(book);
+
+        localStorage.setItem('books', JSON.stringify(books));
+
+    }
+
+    static removeBook(isbn){
+        const books = Store.getBooks();
+
+        books.forEach(function(book, index){
+            if(book.isbn === isbn){
+                books.splice(index, 1);
+            }
+        });
+
+        localStorage.setItem('book', JSON.stringify(books));
+    }
+}
+
+//DOM load event
+    document.addEventListener('DOMContentLoader', Store.displayBooks);
+
+
 //Event Listner for add bood
 document.getElementById('book-form').addEventListener('submit', function(e){
     //Get form value
@@ -66,6 +116,8 @@ document.getElementById('book-form').addEventListener('submit', function(e){
     
     //Instantiate UI
     const ui = new UI();
+
+    console.log(ui);
     
     //Validate
     if(title === '' || author === '' || isbn === ''){
@@ -74,6 +126,9 @@ document.getElementById('book-form').addEventListener('submit', function(e){
     } else {
     //UI Add book to list
      ui.addBookToList(book);
+
+     //Add to local storage
+     Store.addBook(book);
     
      //Show success
      ui.showAlert('Book added!', 'success');
@@ -90,7 +145,10 @@ document.getElementById('book-form').addEventListener('submit', function(e){
     document.getElementById('book-list').addEventListener('click', function(e){
       const ui = new(UI);  
     
+      //Delete book
       ui.deleteBook(e.target);
+
+      
     
       //show alert message
       ui.showAlert('Book Removed!', 'success');
